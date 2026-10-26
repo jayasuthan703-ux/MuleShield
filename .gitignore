@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.venv-clean/
+.pytest_cache/
+
+# Local-only data: auto-generated on first run / per-install secret
+data/muleshield.db
+data/.indicator_salt
+data/_firstrun_backup/
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

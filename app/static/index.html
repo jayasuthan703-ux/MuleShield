@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="MuleShield - spot and refuse money-mule recruitment offers." />
+  <title>MuleShield · Spot money-mule offers</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%232dd4bf' d='M12 1 3 5v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V5l-9-4z'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <!-- ======================= NAVBAR ======================= -->
+  <nav class="navbar" aria-label="Main navigation">
+    <a class="brand" href="#/">
+      <svg class="brand-logo" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 1 3 5v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V5l-9-4zm0 6.5c1.9 0 3.5 1.6 3.5 3.5 1.2.4 2 1.5 2 2.8 0 1.6-1.3 2.9-2.9 2.9H8.4A3.4 3.4 0 0 1 5 13.3c0-1.3.8-2.4 2-2.8 0-1.9 1.6-3 5-3z"/></svg>
+      Mule<span class="brand-accent">Shield</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    <div class="nav-links" id="navLinks">
+      <a href="#/" data-route="/">Home</a>
+      <a href="#/simulator" data-route="/simulator">Simulator</a>
+      <a href="#/report" data-route="/report">Report</a>
+      <a href="#/alerts" data-route="/alerts">Campus Alerts</a>
+      <a href="#/bank" data-route="/bank">Bank Dashboard</a>
+      <a href="#/learn" data-route="/learn">Learn</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <!-- ======================= HOME ======================= -->
+    <section class="page" id="page-home">
+      <header class="hero">
+        <p class="eyebrow">For students · Works offline · Nothing stored</p>
+        <h1>Spot money-mule offers <span class="accent">before</span> they spot you.</h1>
+        <p class="hero-sub">
+          A friendly-looking "part-time job" can turn your bank account into a
+          laundering trail. Paste the message you received and MuleShield checks it
+          for the classic red flags — in English, Tamil, Tanglish or Hinglish.
+        </p>
+      </header>
+
+      <!-- Check a message -->
+      <section class="card analyze-card" aria-labelledby="checkHeading">
+        <div class="card-head">
+          <h2 id="checkHeading">Check a message</h2>
+          <span class="privacy-pill" title="No text leaves your device">
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M12 1a5 5 0 0 0-5 5v3H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-2V6a5 5 0 0 0-5-5zm-3 8V6a3 3 0 1 1 6 0v3H9z"/></svg>
+            Private by design
+          </span>
+        </div>
+
+        <label class="sr-only" for="messageInput">Message to analyse</label>
+        <textarea
+          id="messageInput"
+          rows="6"
+          maxlength="7000"
+          placeholder="Paste the suspicious message here… e.g. &quot;Earn easy money, just receive and transfer funds…&quot;"
+        ></textarea>
+
+        <div class="input-meta">
+          <span id="charCount" class="char-count">0 / 5,000 characters</span>
+          <span id="inputError" class="input-error" role="alert" hidden></span>
+        </div>
+
+        <div class="samples">
+          <span class="samples-label">Try a sample:</span>
+          <button class="chip" data-sample="en">🇬🇧 English offer</button>
+          <button class="chip" data-sample="ta">🇮🇳 Tamil offer</button>
+          <button class="chip" data-sample="ok">💬 Friendly chat</button>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" id="analyzeBtn">
+            <span class="btn-label">Analyse message</span>
+          </button>
+          <button class="btn btn-ghost" id="clearBtn" type="button">Clear</button>
+        </div>
+
+        <p class="privacy-note">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+          We analyse only what you submit. Nothing is stored.
+        </p>
+      </section>
+
+      <!-- Result view -->
+      <section class="card result-card" id="result" aria-live="polite" hidden>
+        <div class="result-top">
+          <div class="gauge level-low" id="gauge" role="img" aria-label="Risk gauge">
+            <div class="gauge-inner">
+              <span class="gauge-score" id="gaugeScore">0</span>
+              <span class="gauge-cap">/ 100</span>
+              <span class="gauge-label">risk score</span>
+            </div>
+          </div>
+          <div class="result-summary">
+            <span class="level-badge level-low" id="levelBadge">LOW RISK</span>
+            <h3>Your message</h3>
+            <blockquote id="highlightedText"></blockquote>
+            <p class="result-note" id="resultNote" hidden></p>
+          </div>
+        </div>
+
+        <h3 class="section-title" id="whyFlaggedTitle">Why flagged</h3>
+        <div class="signals" id="signalsList"></div>
+
+        <h3 class="section-title">What this could mean</h3>
+        <p class="legal-summary" id="legalSummary"></p>
+
+        <h3 class="section-title">What to do next</h3>
+        <ul class="actions-list" id="actionsList"></ul>
+
+        <p class="privacy-note result-privacy" id="resultPrivacy"></p>
+      </section>
+    </section>
+
+    <!-- ============ PAGES BUILT IN THE NEXT MODULES ============ -->
+    <section class="page" id="page-simulator" hidden>
+      <header class="hero compact">
+        <p class="eyebrow">Interactive scenario</p>
+        <h1>What happens if you say <span class="danger">yes</span>?</h1>
+        <p class="hero-sub">
+          Step through a typical money-mule offer from the student's side: what
+          arrives in your account, what changes after you forward it, and how the
+          other path — declining — ends instead.
+        </p>
+      </header>
+
+      <section class="card sim-card" aria-labelledby="simTitle">
+        <div class="sim-topbar">
+          <div class="sim-status warn" id="simStatus">
+            <span class="sim-status-dot" aria-hidden="true"></span>
+            <span id="simStatusText">Unverified offer</span>
+          </div>
+          <div class="sim-balance">
+            <span class="sim-balance-label">Account balance</span>
+            <span class="sim-balance-value" id="simBalance">₹1,250</span>
+            <span class="sim-balance-delta" id="simDelta" hidden></span>
+            <span class="sim-balance-state" id="simState" hidden></span>
+            <span class="sim-balance-bar" aria-hidden="true">
+              <span class="sim-balance-fill" id="simBar"></span>
+            </span>
+          </div>
+        </div>
+
+        <ol class="sim-stepper" id="simStepper" aria-label="Scenario progress"></ol>
+
+        <div class="sim-step sim-enter" id="simStep" aria-live="polite">
+          <p class="sim-step-kicker" id="simKicker">Step 1 of 7</p>
+          <h2 id="simTitle">A message from a contact</h2>
+          <p class="sim-narrative" id="simNarrative">
+            A contact from your circle offers you part-time work: money will
+            arrive in your bank account, you forward it on, and you keep a share.
+            They say it takes just a few days and ask you not to mention it to
+            anyone.
+          </p>
+        </div>
+
+        <div class="sim-branch sim-enter" id="simBranch" hidden>
+          <span class="level-badge level-low">SAFER PATH</span>
+          <h2>You decline — and that is the end of it</h2>
+          <p class="sim-narrative">
+            You leave the message on read. Later you block the sender, show the
+            chat to a friend, and report it through your college or your national
+            cybercrime portal. No money ever touches your account, so there is
+            nothing to freeze and no questions to answer. The recruiter goes off
+            to look for someone else — and one path into your campus is closed.
+          </p>
+          <div class="branch-facts">
+            <div class="branch-fact"><span>Balance</span><strong>₹1,250 — untouched</strong></div>
+            <div class="branch-fact"><span>Account status</span><strong>Normal</strong></div>
+            <div class="branch-fact"><span>Follow-up</span><strong>None</strong></div>
+          </div>
+          <p class="branch-hint">
+            Curious about the other path? Press <strong>Replay</strong> to start
+            again from the offer.
+          </p>
+        </div>
+
+        <div class="sim-controls">
+          <button class="btn btn-ghost" id="simBack" type="button">← Back</button>
+          <button class="btn btn-primary" id="simNext" type="button">Next →</button>
+          <button class="btn btn-ghost" id="simReplay" type="button">↺ Replay</button>
+          <button class="btn btn-refuse" id="simRefuse" type="button">Choose to refuse instead</button>
+        </div>
+
+        <p class="sim-note">Illustrative scenario, not legal advice.</p>
+      </section>
+    </section>
+
+    <!-- ============ REPORT ============ -->
+    <section class="page" id="page-report" hidden>
+      <header class="hero compact">
+        <p class="eyebrow">Anonymous · No names · No raw text kept</p>
+        <h1>Report it <span class="accent">anonymously</span></h1>
+        <p class="hero-sub">
+          Paste the recruitment message you received. MuleShield extracts the
+          phone numbers, UPI IDs, links and messaging handles, then keeps only
+          one-way salted hashes and masked forms like <code>98xxxxxx21</code> —
+          never the message itself.
+        </p>
+      </header>
+
+      <section class="card" aria-labelledby="reportHeading">
+        <div class="card-head">
+          <h2 id="reportHeading">File a report</h2>
+          <span class="privacy-pill" title="Nothing you paste is stored raw">
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M12 1a5 5 0 0 0-5 5v3H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-2V6a5 5 0 0 0-5-5zm-3 8V6a3 3 0 1 1 6 0v3H9z"/></svg>
+            Private by design
+          </span>
+        </div>
+
+        <label class="field-label" for="reportText">Suspicious message</label>
+        <textarea
+          id="reportText"
+          rows="6"
+          maxlength="7000"
+          placeholder="Paste what you received… e.g. &quot;Receive money in your account and forward it, 10% commission, call 9876543210…&quot;"
+        ></textarea>
+        <div class="input-meta">
+          <span id="reportCharCount" class="char-count">0 / 7,000 characters</span>
+        </div>
+
+        <label class="field-label" for="reportCampus">
+          Campus / department tag
+          <span class="field-hint">(optional — a tag like “CSE”, not your name)</span>
+        </label>
+        <input id="reportCampus" list="campusTagOptions" maxlength="50" placeholder="e.g. CSE, ECE, MECH, MBA" autocomplete="off" />
+        <datalist id="campusTagOptions">
+          <option value="CSE"></option><option value="ECE"></option><option value="MECH"></option>
+          <option value="CIVIL"></option><option value="MBA"></option><option value="PHARM"></option>
+          <option value="HOSTEL"></option><option value="OTHER"></option>
+        </datalist>
+
+        <ul class="privacy-bullets">
+          <li>Only salted hashes and masked indicators are stored — the raw message is discarded.</li>
+          <li>No name, phone number, roll number or login is asked or recorded.</li>
+          <li>When <strong>3</strong> reports share an indicator, it becomes an active campus alert.</li>
+        </ul>
+
+        <div class="actions">
+          <button class="btn btn-primary" id="reportSubmitBtn"><span class="btn-label">Send anonymous report</span></button>
+          <button class="btn btn-ghost" id="reportClearBtn" type="button">Clear</button>
+        </div>
+        <span id="reportError" class="input-error" role="alert" hidden></span>
+      </section>
+
+      <section class="card report-result" id="reportResult" hidden aria-live="polite">
+        <h2>Report stored <span class="accent">anonymously</span></h2>
+        <p class="result-message" id="reportMessage"></p>
+
+        <h3 class="section-title">Masked indicators extracted</h3>
+        <div class="mask-list" id="reportIndicators"></div>
+
+        <h3 class="section-title">Clustering</h3>
+        <div id="reportCluster" class="cluster-box"></div>
+
+        <div class="actions">
+          <a class="btn btn-ghost" href="#/alerts">View campus alerts</a>
+          <button class="btn btn-ghost" id="reportAgainBtn" type="button">Report another</button>
+        </div>
+        <p class="privacy-note" id="reportPrivacyNote"></p>
+      </section>
+    </section>
+
+    <!-- ============ CAMPUS ALERTS ============ -->
+    <section class="page" id="page-alerts" hidden>
+      <header class="hero compact">
+        <p class="eyebrow">Clustered from anonymous reports</p>
+        <h1>Campus <span class="accent">alerts</span></h1>
+        <p class="hero-sub">
+          Reports that share a salted indicator hash or read almost identically
+          are grouped. Three or more matching reports raise an alert everyone
+          can see — built only from masked indicators, never raw messages.
+        </p>
+      </header>
+
+      <div class="alerts-toolbar">
+        <div class="alerts-stats" id="alertStats" aria-live="polite"></div>
+        <button class="btn btn-ghost" id="alertsRefreshBtn" type="button">↻ Refresh</button>
+      </div>
+
+      <div id="alertsGrid" class="alerts-grid"></div>
+
+      <section class="card placeholder-card" id="alertsEmpty" hidden>
+        <h2>No clusters yet</h2>
+        <p>Once three reports share an indicator (or near-identical text), an active alert appears here. Check back after more reports come in.</p>
+      </section>
+
+      <p class="privacy-note alerts-privacy">
+        Built from salted hashes, masked indicators and derived features only —
+        raw messages are never stored, so alerts are always partial by design.
+        File official complaints on
+        <a href="https://cybercrime.gov.in" rel="noopener">cybercrime.gov.in</a>.
+      </p>
+    </section>
+
+    <!-- ============ BANK DASHBOARD ============ -->
+    <section class="page" id="page-bank" hidden>
+      <header class="hero compact">
+        <p class="eyebrow">Bank-side view · Isolation Forest + rules</p>
+        <h1>Bank-side <span class="accent">anomaly watch</span></h1>
+        <p class="hero-sub">
+          Two hundred synthetic student accounts scored for money-mule
+          behaviour: a spray of small credits from unrelated senders,
+          same-day pass-through, an unfamiliar device, and a balance that
+          never keeps anything. Click any row for the breakdown and money flow.
+        </p>
+      </header>
+
+      <div class="synth-banner" role="note">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 2 1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z"/></svg>
+        Synthetic data for demonstration only.
+      </div>
+
+      <div class="bank-stats" id="bankStats"></div>
+
+      <section class="card" aria-labelledby="bankTableHeading">
+        <div class="card-head">
+          <h2 id="bankTableHeading">Ranked accounts</h2>
+          <span class="privacy-pill">Score = 0.6·model + 0.4·rules</span>
+        </div>
+        <p class="table-hint">Sorted by anomaly score. Top rows are the injected mule accounts.</p>
+        <div class="table-wrap">
+          <table class="bank-table" id="bankTable">
+            <thead>
+              <tr>
+                <th>#</th><th>Account</th><th>Score</th><th>Level</th>
+                <th>Credits</th><th>Senders</th><th>Pass-through</th>
+                <th>Avg forward</th><th>Retained</th>
+              </tr>
+            </thead>
+            <tbody id="bankTableBody"></tbody>
+          </table>
+        </div>
+        <p class="bank-error" id="bankError" role="alert" hidden></p>
+      </section>
+
+      <section class="card" id="bankDetail" hidden aria-live="polite">
+        <div class="card-head">
+          <h2>Breakdown — <span class="accent" id="detailAccount">—</span></h2>
+          <span id="detailLevel"></span>
+        </div>
+        <div class="detail-grid">
+          <div class="breakdown-col">
+            <h3 class="section-title">Score breakdown</h3>
+            <div class="score-bars" id="scoreBars"></div>
+            <h3 class="section-title">Why flagged</h3>
+            <div class="rule-hits" id="ruleHits"></div>
+            <h3 class="section-title">Features</h3>
+            <dl class="feature-list" id="featureList"></dl>
+          </div>
+          <div class="chart-col">
+            <h3 class="section-title">Money flow</h3>
+            <div class="chart-box"><canvas id="flowChart" aria-label="Credits and debits over time" role="img"></canvas></div>
+            <p class="chart-note" id="flowNote"></p>
+          </div>
+        </div>
+        <p class="synth-note">Synthetic data for demonstration only.</p>
+      </section>
+    </section>
+
+    <!-- ============ LEARN ============ -->
+    <section class="page" id="page-learn" hidden>
+      <header class="hero compact">
+        <p class="eyebrow">Checklist · Myths · Shareable alert</p>
+        <h1>Learn the <span class="accent">red flags</span></h1>
+        <p class="hero-sub">
+          Spot the pattern before you reply. The checklist mirrors what the
+          detector looks for, the myths are the ones recruiters rely on, and
+          the alert text is ready to paste into your class group.
+        </p>
+      </header>
+
+      <!-- Red-flags checklist -->
+      <section class="card" aria-labelledby="checklistHeading">
+        <div class="card-head">
+          <h2 id="checklistHeading">Red-flags checklist</h2>
+          <span class="privacy-pill" id="checklistProgress" aria-live="polite">0 of 11 spotted</span>
+        </div>
+        <p class="card-intro">
+          Tick every sign you can find in the message you received. Several
+          ticks together mean: stop, don't reply, analyse it first.
+        </p>
+        <ul class="checklist" id="checklist"></ul>
+        <p class="checklist-note" id="checklistNote" role="status">
+          Nothing ticked yet — open the checklist against a real message and
+          see how many signs it carries.
+        </p>
+        <div class="actions">
+          <a class="btn btn-primary" href="#/">Analyse a message</a>
+          <a class="btn btn-ghost" href="#/simulator">Walk through the scenario</a>
+        </div>
+      </section>
+
+      <!-- Myth vs reality -->
+      <section class="card" aria-labelledby="mythHeading">
+        <div class="card-head">
+          <h2 id="mythHeading">Myth vs reality</h2>
+          <span class="privacy-pill">What recruiters count on</span>
+        </div>
+        <div class="table-wrap">
+          <table class="myth-table">
+            <thead>
+              <tr><th scope="col">Myth</th><th scope="col">Reality</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td data-label="Myth">“I'm only renting my account for a few days — no real risk.”</td>
+                <td data-label="Reality">Your account moves money that was stolen from someone else. Accounts get frozen and you can be named in a complaint — renting does not create an alibi.</td>
+              </tr>
+              <tr>
+                <td data-label="Myth">“The money landed in my account, so it must be legal.”</td>
+                <td data-label="Reality">The money arriving is the crime's proceeds. Passing it on is exactly the step that turns a student account into a laundering trail.</td>
+              </tr>
+              <tr>
+                <td data-label="Myth">“10% commission for doing nothing — that's just easy money.”</td>
+                <td data-label="Reality">The commission is payment for taking someone else's legal risk. Nobody pays that much for a favour that is harmless.</td>
+              </tr>
+              <tr>
+                <td data-label="Myth">“I'm a student, the law won't come after me.”</td>
+                <td data-label="Reality">Being young or a student is no shield. The trail runs through your account and KYC details, not your intentions.</td>
+              </tr>
+              <tr>
+                <td data-label="Myth">“If I delete the chat, there's no evidence.”</td>
+                <td data-label="Reality">Banks keep the transaction records for years. Deleting messages only removes your side of the story.</td>
+              </tr>
+              <tr>
+                <td data-label="Myth">“Only greedy or careless people fall for this.”</td>
+                <td data-label="Reality">Recruiters target students with exam stress, fees to pay or a genuine need for part-time work — with scripts written by professionals.</td>
+              </tr>
+              <tr>
+                <td data-label="Myth">“A scam always asks me to pay money first, so I'll recognise it.”</td>
+                <td data-label="Reality">Mule recruitment pays you. That is the trap: you are never asked to send money, only to let money pass through.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Shareable campus alert -->
+      <section class="card" aria-labelledby="shareHeading">
+        <div class="card-head">
+          <h2 id="shareHeading">Shareable campus alert</h2>
+          <span class="privacy-pill">Masked indicators only</span>
+        </div>
+        <p class="card-intro">
+          Built from the live campus alerts (three or more matching anonymous
+          reports). Copy it into your class group or hostel notice board —
+          it contains masked indicators, never raw messages or personal details.
+        </p>
+        <pre class="summary-pre share-text" id="shareText" aria-live="polite">Loading current alerts…</pre>
+        <div class="actions">
+          <button class="btn btn-primary" id="shareCopyBtn"><span class="btn-label">Copy alert text</span></button>
+          <button class="btn btn-ghost" id="shareRefreshBtn" type="button">↻ Refresh</button>
+        </div>
+        <p class="privacy-note">
+          Check any job message with MuleShield, and report what you receive —
+          anonymous reports are what raise these alerts. Illustrative
+          information, not legal advice.
+        </p>
+      </section>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p><strong>MuleShield</strong> — a hackathon demo. Synthetic data, heuristic detector, not legal advice.</p>
+    <p class="footer-privacy">We analyse only what you submit. Nothing is stored.</p>
+  </footer>
+
+  <script src="/vendor/chart.umd.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

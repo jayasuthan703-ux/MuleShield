@@ -1,0 +1,9 @@
+# Render blueprint: run the FastAPI app exactly as it runs locally.
+# Free web service — no environment variables or paid services needed.
+services:
+  - type: web
+    name: muleshield
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
