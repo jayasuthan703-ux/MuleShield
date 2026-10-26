@@ -4,9 +4,13 @@ Serves the static single-page frontend at "/" and exposes the JSON API
 under "/api". Feature modules are wired in here as they are built.
 """
 
+from __future__ import annotations
+
+import threading
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -20,6 +24,31 @@ app = FastAPI(
     description="Helps students recognise and refuse money-mule recruitment offers.",
     version="0.1.0",
 )
+
+# Shrink text assets (chart.js 205KB -> ~60KB) so pages paint fast on
+# cold connections.
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+
+@app.middleware("http")
+async def static_cache_headers(request, call_next):
+    """Let browsers keep static assets for an hour (repeat visits instant)."""
+    response = await call_next(request)
+    path = request.url.path
+    if path.endswith((".js", ".css")) and "cache-control" not in response.headers:
+        response.headers["Cache-Control"] = "public, max-age=3600"
+    return response
+
+
+@app.on_event("startup")
+def prewarm_models() -> None:
+    """Fit the anomaly model in the background at boot.
+
+    Otherwise the *first* visitor after a cold start pays the Isolation
+    Forest training time (seconds on a free-tier instance) while staring
+    at a spinner.
+    """
+    threading.Thread(target=anomaly.get_anomalies, daemon=True).start()
 
 
 class AnalyzeRequest(BaseModel):

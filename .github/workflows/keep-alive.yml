@@ -1,0 +1,29 @@
+# Keeps the Render free instance awake so visitors never see the
+# "just waking up" cold-start screen. Render spins down after 15 idle
+# minutes; this pings every 10 minutes instead.
+#
+# NOTE: scheduled workflows consume Actions minutes on PRIVATE repos
+# (~144 short runs/day). Make the repo Public for unlimited free runs,
+# or use an external monitor (e.g. UptimeRobot, 5-min interval) instead.
+name: keep-alive
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wake the Render instance
+        run: |
+          URL="https://muleshield-r4zy.onrender.com/api/health"
+          for i in 1 2 3; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 "$URL" || true)
+            echo "attempt $i -> HTTP $code"
+            if [ "$code" = "200" ]; then exit 0; fi
+            sleep 20
+          done
+          echo "instance did not wake in time"
+          exit 1
